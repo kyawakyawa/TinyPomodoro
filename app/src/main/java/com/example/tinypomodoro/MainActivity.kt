@@ -9,9 +9,9 @@ import android.widget.Button
 
 class MainActivity : AppCompatActivity() {
 
-    val handler = Handler()
-    var config: Config = Config()
-    var pomodoroTimer: PomodoroTimer? = null
+    private val handler = Handler()
+    private var config: Config = Config()
+    private var pomodoroTimer: PomodoroTimer = PomodoroTimer(config.setTimes, config.timerNames)
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,27 +27,19 @@ class MainActivity : AppCompatActivity() {
         val statusButton = findViewById<Button>(R.id.switch_status)
 
         val runnable = object : Runnable {
-            fun init() {
-                pomodoroTimer = PomodoroTimer(config.setTimes, config.timerNames)
-                pomodoroTimer?.setStatus(true)
-                syncWithViewAndTimer()
-            }
 
             override fun run() {
-                if (pomodoroTimer == null) {
-                    this.init()
-                }
-                pomodoroTimer?.advanceOneSecond().let {
+                pomodoroTimer.advanceOneSecond().let {
                     val timeLeft = it
 
                     if (timeLeft == false) {
-                        statusText.text = pomodoroTimer?.getActiveTimerName()
+                        statusText.text = pomodoroTimer.getActiveTimerName()
                     }
                 }
 
-                pomodoroTimer?.getRemainingTime()?.let { it_ ->
-                    timeToText(it_).let {
-                        remainingTime.text = it!!
+                pomodoroTimer.getRemainingTime().let {
+                    timeToText(it).let { it_ ->
+                        remainingTime.text = it_!!
                     }
                 }
                 handler.postDelayed(this, 1000)
@@ -56,40 +48,37 @@ class MainActivity : AppCompatActivity() {
 
         // start
         startStopButton.setOnClickListener {
-            if (pomodoroTimer == null) {
-                startStopButton.text = "Stop"
-                handler.post(runnable)
+
+            if (pomodoroTimer.getStatus()) {
+                handler.removeCallbacks(runnable)
+                // startStopButton.text = "Start"
+                pomodoroTimer.setStatus(false)
+                syncWithViewAndTimer()
             } else {
-                if (pomodoroTimer?.getStatus()!!) {
-                    handler.removeCallbacks(runnable)
-                    // startStopButton.text = "Start"
-                    pomodoroTimer?.setStatus(false)
-                    syncWithViewAndTimer()
-                } else {
-                    handler.post(runnable)
-                    // startStopButton.text = "Stop"
-                    pomodoroTimer?.setStatus(true)
-                    syncWithViewAndTimer()
-                }
+                handler.post(runnable)
+                // startStopButton.text = "Stop"
+                pomodoroTimer.setStatus(true)
+                syncWithViewAndTimer()
             }
         }
 
         resetButton.setOnClickListener {
             handler.removeCallbacks(runnable)
-            pomodoroTimer = null
-            timeToText(-1)?.let {
-                remainingTime.text = it
-            }
-            startStopButton.text = "Start"
+            pomodoroTimer.setStatus(false)
+            pomodoroTimer.reset()
+            syncWithViewAndTimer()
+            // timeToText(-1)?.let {
+            //     remainingTime.text = it
+            // }
         }
 
         statusButton.setOnClickListener {
             handler.removeCallbacks(runnable)
-            pomodoroTimer?.setStatus(false)
-            pomodoroTimer?.getActiveTimerId()?.let {
-                pomodoroTimer?.setActivetimerId(it + 1)
+            pomodoroTimer.setStatus(false)
+            pomodoroTimer.getActiveTimerId().let {
+                pomodoroTimer.setActivetimerId(it + 1)
             }
-            pomodoroTimer?.reset()
+            pomodoroTimer.reset()
             syncWithViewAndTimer()
         }
 
@@ -97,11 +86,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
 
-        val remainingTime = findViewById<TextView>(R.id.remaining_time)
+        pomodoroTimer.setStatus(false)
+        syncWithViewAndTimer()
 
-        timeToText(-1)?.let {
-            remainingTime.text = it
-        }
     }
 
     private fun timeToText(time: Int = 0): String? {
@@ -126,20 +113,17 @@ class MainActivity : AppCompatActivity() {
         val statusText = findViewById<TextView>(R.id.status)
         val startStopButton = findViewById<Button>(R.id.start_stop)
 
-        pomodoroTimer?.getRemainingTime()?.let { it_ ->
+        pomodoroTimer.getRemainingTime().let { it_ ->
             timeToText(it_).let {
                 remainingTime.text = it!!
             }
         }
 
-        statusText.text = pomodoroTimer?.getActiveTimerName()
+        statusText.text = pomodoroTimer.getActiveTimerName()
 
         startStopButton.text =
-            if (pomodoroTimer == null) "Start"
-            else {
-                if (pomodoroTimer?.getStatus()!!) "Stop" else "Start"
-            }
+                if (pomodoroTimer.getStatus()) "Stop" else "Start"
 
-        statusText.text = pomodoroTimer?.getActiveTimerName()
+        statusText.text = pomodoroTimer.getActiveTimerName()
     }
 }
