@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        init()
+        initTimer()
 
         val remainingTime = findViewById<TextView>(R.id.remaining_time)
         val statusText = findViewById<TextView>(R.id.status)
@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun init() {
+    private fun initTimer() {
 
         pomodoroTimer.setStatus(false)
         syncWithViewAndTimer()
