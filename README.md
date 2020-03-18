@@ -18,6 +18,7 @@ The timer starts when you push the start button.
 ## TODO
 - [ ] Setting UI
 - [ ] Long breaking
+- [ ] Display remaining time in notification field
 
 ## LICENSE
 - MIT License
