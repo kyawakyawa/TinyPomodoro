@@ -1,9 +1,13 @@
 package com.example.tinypomodoro
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.os.VibrationEffect
+import android.os.VibrationEffect.DEFAULT_AMPLITUDE
+import android.os.Vibrator
 import android.widget.TextView
 import android.widget.Button
 
@@ -26,13 +30,22 @@ class MainActivity : AppCompatActivity() {
         val resetButton = findViewById<Button>(R.id.reset)
         val statusButton = findViewById<Button>(R.id.switch_status)
 
+        val vibrator = object : Runnable {
+            var c:Int = 1
+            override fun run() {
+                vibration(c)
+            }
+        }
+
         val runnable = object : Runnable {
 
             override fun run() {
                 pomodoroTimer.advanceOneSecond().let {
                     val timeLeft = it
 
-                    if (timeLeft == false) {
+                    if (!timeLeft) {
+                        vibrator.c = pomodoroTimer.getActiveTimerId() + 1
+                        handler.post(vibrator)
                         statusText.text = pomodoroTimer.getActiveTimerName()
                     }
                 }
@@ -51,12 +64,10 @@ class MainActivity : AppCompatActivity() {
 
             if (pomodoroTimer.getStatus()) {
                 handler.removeCallbacks(runnable)
-                // startStopButton.text = "Start"
                 pomodoroTimer.setStatus(false)
                 syncWithViewAndTimer()
             } else {
                 handler.post(runnable)
-                // startStopButton.text = "Stop"
                 pomodoroTimer.setStatus(true)
                 syncWithViewAndTimer()
             }
@@ -67,9 +78,6 @@ class MainActivity : AppCompatActivity() {
             pomodoroTimer.setStatus(false)
             pomodoroTimer.reset()
             syncWithViewAndTimer()
-            // timeToText(-1)?.let {
-            //     remainingTime.text = it
-            // }
         }
 
         statusButton.setOnClickListener {
@@ -122,8 +130,27 @@ class MainActivity : AppCompatActivity() {
         statusText.text = pomodoroTimer.getActiveTimerName()
 
         startStopButton.text =
-                if (pomodoroTimer.getStatus()) "Stop" else "Start"
+            if (pomodoroTimer.getStatus()) "Stop" else "Start"
 
         statusText.text = pomodoroTimer.getActiveTimerName()
+    }
+
+    private fun vibration(c:Int) {
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+
+            val f = LongArray(c * 2) { 500 }
+            val onoff = IntArray(c * 2) { i -> if(i % 2 == 0) DEFAULT_AMPLITUDE else 0}
+
+            val vibrationEffect: VibrationEffect =
+                VibrationEffect.createWaveform(f ,onoff, -1)
+            vibrator.vibrate(vibrationEffect)
+        } else {
+            val f = LongArray(c * 2) { i -> if(i > 0) 500 else 0 }
+            vibrator.vibrate(f, -1)
+
+        }
     }
 }
