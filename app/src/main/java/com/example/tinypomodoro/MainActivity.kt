@@ -10,8 +10,8 @@ import android.widget.Button
 class MainActivity : AppCompatActivity() {
 
     val handler = Handler()
-    var config:Config = Config()
-    var pomodoroTimer:PomodoroTimer? = null
+    var config: Config = Config()
+    var pomodoroTimer: PomodoroTimer? = null
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,25 +27,26 @@ class MainActivity : AppCompatActivity() {
         val statusButton = findViewById<Button>(R.id.switch_status)
 
         val runnable = object : Runnable {
-            fun init(){
+            fun init() {
                 pomodoroTimer = PomodoroTimer(config.setTimes, config.timerNames)
-                pomodoroTimer?.SetStatus(true)
+                pomodoroTimer?.setStatus(true)
                 syncWithViewAndTimer()
             }
+
             override fun run() {
                 if (pomodoroTimer == null) {
                     this.init()
                 }
-                pomodoroTimer?.AdvanceOneSecond().let {
+                pomodoroTimer?.advanceOneSecond().let {
                     val timeLeft = it
 
                     if (timeLeft == false) {
-                        statusText.text = pomodoroTimer?.GetActiveTimerName()
+                        statusText.text = pomodoroTimer?.getActiveTimerName()
                     }
                 }
 
-                pomodoroTimer?.GetRemainingTime()?.let { it_ ->
-                    timeToText(it_).let{
+                pomodoroTimer?.getRemainingTime()?.let { it_ ->
+                    timeToText(it_).let {
                         remainingTime.text = it!!
                     }
                 }
@@ -59,15 +60,15 @@ class MainActivity : AppCompatActivity() {
                 startStopButton.text = "Stop"
                 handler.post(runnable)
             } else {
-                if (pomodoroTimer?.GetStatus()!!) {
+                if (pomodoroTimer?.getStatus()!!) {
                     handler.removeCallbacks(runnable)
                     // startStopButton.text = "Start"
-                    pomodoroTimer?.SetStatus(false)
+                    pomodoroTimer?.setStatus(false)
                     syncWithViewAndTimer()
                 } else {
                     handler.post(runnable)
                     // startStopButton.text = "Stop"
-                    pomodoroTimer?.SetStatus(true)
+                    pomodoroTimer?.setStatus(true)
                     syncWithViewAndTimer()
                 }
             }
@@ -84,11 +85,11 @@ class MainActivity : AppCompatActivity() {
 
         statusButton.setOnClickListener {
             handler.removeCallbacks(runnable)
-            pomodoroTimer?.SetStatus(false)
-            pomodoroTimer?.GetActiveTimerId()?.let {
-                pomodoroTimer?.SetActivetimerId(it + 1)
+            pomodoroTimer?.setStatus(false)
+            pomodoroTimer?.getActiveTimerId()?.let {
+                pomodoroTimer?.setActivetimerId(it + 1)
             }
-            pomodoroTimer?.Reset()
+            pomodoroTimer?.reset()
             syncWithViewAndTimer()
         }
 
@@ -125,18 +126,20 @@ class MainActivity : AppCompatActivity() {
         val statusText = findViewById<TextView>(R.id.status)
         val startStopButton = findViewById<Button>(R.id.start_stop)
 
-        pomodoroTimer?.GetRemainingTime()?.let { it_ ->
-            timeToText(it_).let{
+        pomodoroTimer?.getRemainingTime()?.let { it_ ->
+            timeToText(it_).let {
                 remainingTime.text = it!!
             }
         }
 
-        statusText.text = pomodoroTimer?.GetActiveTimerName()
+        statusText.text = pomodoroTimer?.getActiveTimerName()
 
         startStopButton.text =
-            if(pomodoroTimer == null) "Start"
-            else { if (pomodoroTimer?.GetStatus()!!) "Stop" else "Start"}
+            if (pomodoroTimer == null) "Start"
+            else {
+                if (pomodoroTimer?.getStatus()!!) "Stop" else "Start"
+            }
 
-        statusText.text = pomodoroTimer?.GetActiveTimerName()
+        statusText.text = pomodoroTimer?.getActiveTimerName()
     }
 }

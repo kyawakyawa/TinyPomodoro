@@ -1,58 +1,58 @@
 package com.example.tinypomodoro
 
-class PomodoroTimer(setTimes_:Array<Int>,timerNames_:Array<String>) {
-    private var setTimes:Array<Int> = setTimes_
-    private var timerNames:Array<String> = timerNames_
-    private var timers:Array<Timer> = Array(setTimes.size) { i -> Timer(setTimes[i])}
-    private var activeTimerId:Int = 0
+class PomodoroTimer(setTimes_: Array<Int>, timerNames_: Array<String>) {
+    private var setTimes: Array<Int> = setTimes_
+    private var timerNames: Array<String> = timerNames_
+    private var timers: Array<Timer> = Array(setTimes.size) { i -> Timer(setTimes[i]) }
+    private var activeTimerId: Int = 0
     private var status = false
 
 
-    public fun GetSetTimes(): Array<Int> {
+    fun getSetTimes(): Array<Int> {
         return setTimes
     }
 
-    public fun SetSetTimes(setTimes_: Array<Int>) {
+    fun setSetTimes(setTimes_: Array<Int>) {
         setTimes = setTimes_
-        timers = Array(setTimes.size) { i -> Timer(setTimes[i])}
+        timers = Array(setTimes.size) { i -> Timer(setTimes[i]) }
     }
 
-    public fun GetActiveTimerId() :Int {
+    fun getActiveTimerId(): Int {
         return activeTimerId
     }
 
-    public fun SetActivetimerId(activeTimerId_:Int) {
+    fun setActivetimerId(activeTimerId_: Int) {
         activeTimerId = activeTimerId_ % timers.size
     }
 
-    public fun GetActiveTimerName() :String {
+    fun getActiveTimerName(): String {
         return timerNames[activeTimerId]
     }
 
-    public fun GetRemainingTime() :Int {
-        return timers[activeTimerId].GetRemainingTime()
+    fun getRemainingTime(): Int {
+        return timers[activeTimerId].getRemainingTime()
     }
 
-    public fun GetStatus(): Boolean {
+    fun getStatus(): Boolean {
         return status
     }
 
-    public  fun SetStatus(status_:Boolean) {
+    fun setStatus(status_: Boolean) {
         status = status_
     }
 
-    public fun AdvanceOneSecond() :Boolean {
-        val time_left = timers[activeTimerId].AdvanceOneSecond()
+    fun advanceOneSecond(): Boolean {
+        val time_left = timers[activeTimerId].advanceOneSecond()
         if (!time_left) {
-            timers[activeTimerId].Reset()
+            timers[activeTimerId].reset()
             activeTimerId = (activeTimerId + 1) % timers.size
         }
         return time_left
     }
 
-    public fun Reset() {
+    fun reset() {
         for (timer in timers) {
-            timer.Reset()
+            timer.reset()
         }
     }
 
